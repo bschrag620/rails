@@ -106,6 +106,21 @@ module Arel # :nodoc: all
           end
         end
 
+        def visit_Arel_Nodes_NotEqual(o, collector)
+          super
+
+          return if unboundable?(o.right)
+
+          left_type = type_from_node(o.left)
+          right_type = type_from_node(o.right)
+
+          # use postgresql type casting to coerce the right type into the left
+          # type
+          if right_type && right_type != left_type
+            collector << JOIN_CASTERS.fetch(left_type)
+          end
+        end
+
         def visit_Arel_Nodes_Regexp(o, collector)
           op = o.case_sensitive ? " ~ " : " ~* "
           infix_value o, collector, op
