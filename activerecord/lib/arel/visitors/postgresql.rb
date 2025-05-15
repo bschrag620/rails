@@ -87,6 +87,8 @@ module Arel # :nodoc: all
         def visit_Arel_Nodes_Equality(o, collector)
           super
 
+          return if unboundable?(o.right)
+
           left_type = type_from_node(o.left)
           right_type = type_from_node(o.right)
 
