@@ -94,35 +94,39 @@ module Arel # :nodoc: all
         def visit_Arel_Nodes_Equality(o, collector)
           super
 
-          return if unboundable?(o.right)
+          return collector if unboundable?(o.right)
 
           left_type = type_from_node(o.left)
           right_type = type_from_node(o.right)
 
-          return unless right_type
+          return collector unless right_type
 
           # use postgresql type casting to coerce the right type into the left
           # type
           if right_type != left_type
             collector << JOIN_CASTERS.fetch(left_type)
           end
+
+          collector
         end
 
         def visit_Arel_Nodes_NotEqual(o, collector)
           super
 
-          return if unboundable?(o.right)
+          return collector if unboundable?(o.right)
 
           left_type = type_from_node(o.left)
           right_type = type_from_node(o.right)
 
-          return unless right_type
+          return collector unless right_type
 
           # use postgresql type casting to coerce the right type into the left
           # type
           if right_type != left_type
             collector << JOIN_CASTERS.fetch(left_type)
           end
+
+          collector
         end
 
         def visit_Arel_Nodes_Regexp(o, collector)
