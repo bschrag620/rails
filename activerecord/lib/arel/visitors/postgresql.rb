@@ -102,13 +102,7 @@ module Arel # :nodoc: all
           # use postgresql type casting to coerce the right type into the left
           # type
           if right_type && right_type != left_type
-            casters = {
-              string: "::text",
-              integer: "::integer",
-              uuid: "::uuid"
-            }
-
-            collector << casters[left_type]
+            collector << JOIN_CASTERS.fetch(left_type)
           end
         end
 
