@@ -101,13 +101,7 @@ module Arel # :nodoc: all
 
           return collector unless right_type
 
-          # use postgresql type casting to coerce the right type into the left
-          # type
-          if right_type != left_type
-            collector << JOIN_CASTERS.fetch(left_type)
-          end
-
-          collector
+          cast_for_join(o, collector)
         end
 
         def visit_Arel_Nodes_NotEqual(o, collector)
@@ -115,6 +109,10 @@ module Arel # :nodoc: all
 
           return collector if unboundable?(o.right)
 
+          cast_for_join(o, collector)
+        end
+
+        def cast_for_join(o, collector)
           left_type = type_from_node(o.left)
           right_type = type_from_node(o.right)
 
