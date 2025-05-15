@@ -80,7 +80,7 @@ module Arel # :nodoc: all
           when Arel::Attributes::Attribute then node.type_caster.type
           when ActiveRecord::Relation::QueryAttribute then type_from_node(node.type)
           when ActiveRecord::Enum::EnumType then node.subtype.type
-          when ActiveModel::Model::Value then node.type
+          when ActiveModel::Type::Value then node.type
           end
         end
 
