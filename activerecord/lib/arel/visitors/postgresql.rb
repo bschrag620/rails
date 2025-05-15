@@ -84,6 +84,13 @@ module Arel # :nodoc: all
           end
         end
 
+        JOIN_CASTERS = {
+          string: "::text",
+          integer: "::integer",
+          big_integer: "::integer",
+          uuid: "::uuid"
+        }.freeze
+
         def visit_Arel_Nodes_Equality(o, collector)
           super
 
