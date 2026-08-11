@@ -82,6 +82,59 @@ module Arel # :nodoc: all
           end
         end
 
+        def type_from_node(node)
+          case node
+          when Symbol, NilClass then node
+          when Arel::Attributes::Attribute then node.type_caster.type
+          when ActiveRecord::Relation::QueryAttribute then type_from_node(node.type)
+          when ActiveRecord::Enum::EnumType then node.subtype.type
+          when ActiveModel::Type::Value then node.type
+          end
+        end
+
+        JOIN_CASTERS = {
+          string: "::text",
+          integer: "::integer",
+          big_integer: "::integer",
+          uuid: "::uuid"
+        }.freeze
+
+        def visit_Arel_Nodes_Equality(o, collector)
+          super
+
+          return collector if unboundable?(o.right)
+
+          left_type = type_from_node(o.left)
+          right_type = type_from_node(o.right)
+
+          return collector unless right_type
+
+          cast_for_join(o, collector)
+        end
+
+        def visit_Arel_Nodes_NotEqual(o, collector)
+          super
+
+          return collector if unboundable?(o.right)
+
+          cast_for_join(o, collector)
+        end
+
+        def cast_for_join(o, collector)
+          left_type = type_from_node(o.left)
+          right_type = type_from_node(o.right)
+
+          return collector unless right_type
+
+          # use postgresql type casting to coerce the right type into the left
+          # type
+          if right_type != left_type
+            collector << JOIN_CASTERS.fetch(left_type)
+          end
+
+          collector
+        end
+
         def visit_Arel_Nodes_Regexp(o, collector)
           op = o.case_sensitive ? " ~ " : " ~* "
           infix_value o, collector, op
